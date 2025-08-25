@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.sp
 import kotlin.math.abs
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collectLatest
 import me.ash.reader.R
 import me.ash.reader.infrastructure.android.TextToSpeechManager
 import me.ash.reader.infrastructure.preference.LocalPullToSwitchArticle
@@ -69,6 +70,12 @@ fun ReadingPage(
     onNavigateToStylePage: () -> Unit,
 ) {
     val context = LocalContext.current
+
+    LaunchedEffect(viewModel.toastEvent) {
+        viewModel.toastEvent.collectLatest { message ->
+            context.showToast(message)
+        }
+    }
     val hapticFeedback = LocalHapticFeedback.current
     val isPullToSwitchArticleEnabled = LocalPullToSwitchArticle.current.value
     val readingUiState = viewModel.readingUiState.collectAsStateValue()
@@ -108,10 +115,12 @@ fun ReadingPage(
                         isScrolled = showTopDivider,
                         title = readerState.title,
                         link = readerState.link,
+                        isSummarizing = readingUiState.isSummarizing,
                         onClick = { bringToTop = true },
                         navigationAction = navigationAction,
                         onNavButtonClick = onNavAction,
                         onNavigateToStylePage = onNavigateToStylePage,
+                        onSummarize = { viewModel.summarizeArticle() }
                     )
                 }
 
@@ -253,13 +262,18 @@ fun ReadingPage(
                                                     enabled = isPullToSwitchArticleEnabled,
                                                 ),
                                             contentPadding = paddings,
+                                            summary = readerState.summary,
                                             content = content.text ?: "",
+                                            description = (readerState.content as? ReaderState.Description)?.content ?: "",
                                             feedName = feedName,
                                             title = title.toString(),
                                             author = author,
-                                            link = link,
+                                            link = link ?: "",
                                             publishedDate = publishedDate,
                                             isLoading = content is ReaderState.Loading,
+                                            readingMode = readerState.readingMode,
+                                            isSummaryAvailable = !readerState.summary.isNullOrBlank(),
+                                            isSummarizing = readingUiState.isSummarizing,
                                             scrollState = scrollState,
                                             listState = listState,
                                             onImageClick = { imgUrl, altText ->
@@ -284,10 +298,10 @@ fun ReadingPage(
                         isUnread = readingUiState.isUnread,
                         isStarred = readingUiState.isStarred,
                         isNextArticleAvailable = isNextArticleAvailable,
-                        isFullContent =
-                            readerState.content is ReaderState.FullContent ||
-                                readerState.content is ReaderState.Error,
+                        readingMode = readerState.readingMode,
                         isBoldCharacters = boldCharacters.value,
+                        isSummarizing = readingUiState.isSummarizing,
+                        isSummaryAvailable = !readerState.summary.isNullOrBlank(),
                         onUnread = { viewModel.updateReadStatus(it) },
                         onStarred = { viewModel.updateStarredStatus(it) },
                         onNextArticle = {
@@ -296,16 +310,14 @@ fun ReadingPage(
                                 onLoadArticle(id, index)
                             }
                         },
-                        onFullContent = {
-                            if (it) viewModel.renderFullContent()
-                            else viewModel.renderDescriptionContent()
-                        },
+                        onFullContent = { viewModel.renderFullContent() },
                         onBoldCharacters = { (!boldCharacters).put(context, coroutineScope) },
                         onReadAloud = {
                             viewModel.textToSpeechManager.readHtml(
                                 readerState.content.text ?: return@BottomBar
                             )
                         },
+                        onSummarize = { viewModel.summarizeArticle() },
                         ttsButton = {
                             TtsButton(
                                 onClick = {

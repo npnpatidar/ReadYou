@@ -18,6 +18,9 @@ object RouteName {
     const val ACCOUNT_DETAILS = "account_details"
     const val ADD_ACCOUNTS = "add_accounts"
 
+    // AI
+    const val AI_CREDENTIALS = "ai_credentials"
+
     // Color & Style
     const val COLOR_AND_STYLE = "color_and_style"
     const val DARK_THEME = "dark_theme"

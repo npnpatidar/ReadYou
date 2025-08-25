@@ -44,7 +44,7 @@ ${applyFontFace(fontPath)}
 :root {
     ${applyFontFamily(fontPath)}
     --font-size: ${fontSize}px;
-    --line-height: ${lineHeight * 1.5f};
+    --line-height: ${lineHeight * 1.6f};
     --letter-spacing: ${letterSpacing}px;
     --text-margin: ${textMargin}px;
     --text-color: ${argbToCssColor(textColor)};
@@ -58,28 +58,27 @@ ${applyFontFace(fontPath)}
     --subhead-upper-case: ${if (subheadUpperCase) "uppercase" else "none"};
     --img-margin: ${imgMargin}px;
     --img-border-radius: ${imgBorderRadius}px;
-    --content-padding;
-    --bold-text-color;
-    --image-caption-margin;
-    --blockquote-margin: 20px;
-    --blockquote-padding;
-    --blockquote-bg-color;
+    --content-padding: 0;
+    --image-caption-margin: 0.5em;
+    --blockquote-margin: 1em;
+    --blockquote-padding: 0.8em;
+    --blockquote-bg-color: transparent;
     --blockquote-border-width: 3px;
     --blockquote-border-color: ${argbToCssColor(textColor)}33;
     --table-margin: ${tableMargin}px;
-    --table-border-width;
-    --table-border-color;
-    --table-cell-padding: 0.2em;
-    --table-alt-row-bg-color;
+    --table-border-width: 1px;
+    --table-border-color: ${argbToCssColor(textColor)}33;
+    --table-cell-padding: 0.5em;
+    --table-alt-row-bg-color: ${argbToCssColor(textColor)}11;
     --code-text-color: ${argbToCssColor(codeTextColor)};
     --code-bg-color: ${argbToCssColor(codeBgColor)};
     --code-scrollbar-color: ${argbToCssColor(codeTextColor)}22;
-    --code-border-width;
-    --code-border-color;
-    --code-padding;
+    --code-border-width: 1px;
+    --code-border-color: ${argbToCssColor(codeTextColor)}33;
+    --code-padding: 0.2em 0.4em;
     --code-font-family: Menlo, Monospace, 'Courier New';
     --code-font-size: 0.9em;
-    --pre-color;
+    --pre-color: ${argbToCssColor(codeTextColor)};
 }
 
 article {
@@ -97,7 +96,10 @@ article {
 /* Page  */
 body {
     margin: 0;
-    padding 0;
+    padding: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
 }
 
 ::selection {
@@ -114,10 +116,12 @@ h5,
 h6 {
     font-weight: var(--subhead-bold) !important;
     text-transform: var(--subhead-upper-case) !important;
-    line-height: calc(min(1.2, var(--line-height))) !important;
+    line-height: calc(min(1.3, var(--line-height))) !important;
     letter-spacing: var(--letter-spacing) !important;
     color: var(--bold-text-color) !important;
     text-align: var(--text-align) !important;
+    margin-top: 0.8em !important;
+    margin-bottom: 0.4em !important;
 }
 
 /* Paragraph */
@@ -128,6 +132,9 @@ p {
     line-height: var(--line-height) !important;
     letter-spacing: var(--letter-spacing) !important;
     text-align: var(--text-align) !important;
+    margin-top: 0 !important;
+    margin-bottom: 1.2em !important;
+    white-space: normal;
 }
 
 span {
@@ -214,10 +221,11 @@ img + small {
 /* List */
 ul,
 ol {
-    padding-left: 0 !important;
+    padding-left: 1.2em !important;
     line-height: var(--line-height) !important;
     letter-spacing: var(--letter-spacing) !important;
     text-align: var(--text-align) !important;
+    margin-bottom: 1em !important;
 }
 
 li {
@@ -225,17 +233,21 @@ li {
     letter-spacing: var(--letter-spacing) !important;
     margin-left: 1.5em !important;
     text-align: var(--text-align) !important;
+    margin-bottom: 0.5em !important;
 }
 
 /* Quote  */
 blockquote {
-    margin-left: 0.5em !important;
-    padding-left: calc(0.9em) !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: var(--blockquote-padding) !important;
     background-color: var(--blockquote-bg-color) !important;
     border-left: var(--blockquote-border-width) solid var(--blockquote-border-color) !important;
     line-height: var(--line-height) !important;
     letter-spacing: var(--letter-spacing) !important;
     text-align: var(--text-align) !important;
+    margin-top: 1em !important;
+    margin-bottom: 1em !important;
 }
 
 blockquote blockquote {
@@ -243,18 +255,20 @@ blockquote blockquote {
 }
 
 blockquote img {
-    max-width 100% !important;
+    max-width: 100% !important;
     left: 0 !important;
 }
 
 /* Table  */
 table {
     display: block;
-    max-width: var(--content-width) !important;
+    max-width: 100% !important;
     width: 100% !important;
     border-collapse: collapse !important;
     margin-left: var(--table-margin) !important;
     margin-right: var(--table-margin) !important;
+    margin-top: 1em !important;
+    margin-bottom: 1em !important;
 }
 
 table th,
@@ -267,11 +281,7 @@ table td {
 }
 
 table tr {
-    display: block;
-}
-
-table tr table tr td {
-    display: inline-block;
+    display: table-row;
 }
 
 table tr:nth-child(even) {
@@ -283,16 +293,22 @@ pre,
 code {
     color: var(--code-text-color) !important;
     background-color: var(--code-bg-color) !important;
-    border: 1 solid var(--code-text-color) !important;
+    border: var(--code-border-width) solid var(--code-border-color) !important;
     border-radius: 8px !important;
-    padding: 2px 5px !important;
-    margin: 2px !important;
+    padding: var(--code-padding) !important;
+    margin: 0.5em 0 !important;
     font-family: var(--code-font-family) !important;
     font-size: var(--code-font-size) !important;
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
 }
 
 pre {
     overflow: auto !important;
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
 }
 
 code {
@@ -348,6 +364,15 @@ hr {
     background-color: var(--text-color) !important;
     opacity: 0.08 !important;
     border-radius: 2px;
+    margin: 1.5em 0 !important;
+}
+
+/* Ensure proper spacing between different block elements */
+p + p, p + ul, p + ol, p + blockquote,
+ul + p, ol + p, blockquote + p,
+h1 + p, h2 + p, h3 + p, h4 + p, h5 + p, h6 + p,
+p + h1, p + h2, p + h3, p + h4, p + h5, p + h6 {
+    margin-top: 1.2em !important;
 }
 
 body {
@@ -376,6 +401,5 @@ body {
     color: var(--bold-text-color) !important;
     text-underline-offset: 3px;
 }
-
 """
 }

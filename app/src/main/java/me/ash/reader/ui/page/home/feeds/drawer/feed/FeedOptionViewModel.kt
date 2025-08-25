@@ -51,7 +51,13 @@ constructor(
 
     suspend fun fetchFeed(feedId: String) {
         val feed = rssService.get().findFeedById(feedId)
-        _feedOptionUiState.update { it.copy(feed = feed, selectedGroupId = feed?.groupId ?: "") }
+        _feedOptionUiState.update {
+            it.copy(
+                feed = feed,
+                selectedGroupId = feed?.groupId ?: "",
+                isSummarize = feed?.isSummarize ?: false
+            )
+        }
     }
 
     fun showNewGroupDialog() {
@@ -97,10 +103,23 @@ constructor(
         viewModelScope.launch(ioDispatcher) {
             _feedOptionUiState.value.feed?.let {
                 val isFullContent = !it.isFullContent
-                val isBrowser = if (isFullContent) false else it.isBrowser
+                val isSummarize = if (isFullContent) false else it.isSummarize
                 rssService
                     .get()
-                    .updateFeed(it.copy(isFullContent = isFullContent, isBrowser = isBrowser))
+                    .updateFeed(it.copy(isFullContent = isFullContent, isSummarize = isSummarize))
+                fetchFeed(it.id)
+            }
+        }
+    }
+
+    fun changeSummarizePreset() {
+        viewModelScope.launch(ioDispatcher) {
+            _feedOptionUiState.value.feed?.let {
+                val isSummarize = !it.isSummarize
+                val isFullContent = if (isSummarize) false else it.isFullContent
+                rssService
+                    .get()
+                    .updateFeed(it.copy(isSummarize = isSummarize, isFullContent = isFullContent))
                 fetchFeed(it.id)
             }
         }
@@ -234,4 +253,5 @@ data class FeedOptionUiState(
     val renameDialogVisible: Boolean = false,
     val newUrl: String = "",
     val changeUrlDialogVisible: Boolean = false,
+    val isSummarize: Boolean = false,
 )

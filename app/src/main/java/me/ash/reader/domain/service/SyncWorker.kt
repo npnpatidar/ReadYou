@@ -6,6 +6,7 @@ import androidx.work.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
+import me.ash.reader.domain.service.ai.AiWorker
 import me.ash.reader.infrastructure.preference.SyncIntervalPreference
 import me.ash.reader.infrastructure.preference.SyncOnlyOnWiFiPreference
 import me.ash.reader.infrastructure.preference.SyncOnlyWhenChargingPreference
@@ -45,6 +46,7 @@ constructor(
                         )
                         .build(),
                 )
+                
                 .then(OneTimeWorkRequestBuilder<WidgetUpdateWorker>().build())
                 .enqueue()
         }

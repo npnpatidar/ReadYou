@@ -31,8 +31,10 @@ data class Feed(
     val accountId: Int,
     @ColumnInfo
     val isNotification: Boolean = false,
-    @ColumnInfo
+    @ColumnInfo(defaultValue = "0")
     val isFullContent: Boolean = false,
+    @ColumnInfo(defaultValue = "0")
+    val isSummarize: Boolean = false,
     @ColumnInfo(defaultValue = "0")
     val isBrowser: Boolean = false,
     @Ignore val important: Int = 0
@@ -46,6 +48,7 @@ data class Feed(
         accountId: Int,
         isNotification: Boolean,
         isFullContent: Boolean,
+        isSummarize: Boolean,
         isBrowser: Boolean
     ) : this(
         id = id,
@@ -56,6 +59,7 @@ data class Feed(
         accountId = accountId,
         isNotification = isNotification,
         isFullContent = isFullContent,
+        isSummarize = isSummarize,
         isBrowser = isBrowser,
         important = 0
     )

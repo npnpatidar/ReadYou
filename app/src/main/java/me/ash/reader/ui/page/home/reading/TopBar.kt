@@ -25,6 +25,8 @@ import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material.icons.rounded.MenuOpen
+import androidx.compose.material.icons.rounded.SmartToy
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -59,8 +61,10 @@ fun TopBar(
     title: String? = "",
     link: String? = "",
     navigationAction: NavigationAction,
+    isSummarizing: Boolean = false,
     onClick: (() -> Unit)? = null,
     onNavButtonClick: (NavigationAction) -> Unit = {},
+    onSummarize: () -> Unit = {},
     onNavigateToStylePage: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -122,6 +126,7 @@ fun TopBar(
                         }
                     },
                     actions = {
+                        // Summary button moved to BottomBar
                         FeedbackIconButton(
                             modifier = Modifier.size(22.dp),
                             imageVector = Icons.Outlined.Palette,

@@ -2,6 +2,7 @@ package me.ash.reader.infrastructure.db
 
 import android.content.Context
 import androidx.room.*
+import androidx.room.migration.AutoMigrationSpec
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import me.ash.reader.domain.model.account.*
@@ -20,11 +21,12 @@ import java.util.*
 
 @Database(
     entities = [Account::class, Feed::class, Article::class, Group::class, ArchivedArticle::class],
-    version = 7,
+    version = 8,
     autoMigrations = [
         AutoMigration(from = 5, to = 6),
         AutoMigration(from = 5, to = 7),
         AutoMigration(from = 6, to = 7),
+        AutoMigration(from = 7, to = 8, spec = AndroidDatabase.Migration7to8::class)
     ]
 )
 @TypeConverters(
@@ -38,6 +40,9 @@ import java.util.*
     SyncBlockListConverters::class,
 )
 abstract class AndroidDatabase : RoomDatabase() {
+
+    @RenameColumn(tableName = "feed", fromColumnName = "isBrowser", toColumnName = "isSummarize")
+    class Migration7to8 : AutoMigrationSpec
 
     abstract fun accountDao(): AccountDao
     abstract fun feedDao(): FeedDao

@@ -14,6 +14,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,7 +25,9 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.ash.reader.domain.data.ArticlePagingListUseCase
 import me.ash.reader.domain.data.DiffMapHolder
 import me.ash.reader.domain.data.FilterState
@@ -35,10 +39,12 @@ import me.ash.reader.domain.model.article.ArticleFlowItem
 import me.ash.reader.domain.model.article.ArticleWithFeed
 import me.ash.reader.domain.model.feed.Feed
 import me.ash.reader.domain.model.general.MarkAsReadConditions
+import me.ash.reader.domain.repository.ArticleDao
 import me.ash.reader.domain.service.GoogleReaderRssService
 import me.ash.reader.domain.service.LocalRssService
 import me.ash.reader.domain.service.RssService
 import me.ash.reader.domain.service.SyncWorker
+import me.ash.reader.domain.service.ai.AiService
 import me.ash.reader.infrastructure.android.AndroidImageDownloader
 import me.ash.reader.infrastructure.android.TextToSpeechManager
 import me.ash.reader.infrastructure.di.ApplicationScope
@@ -66,6 +72,8 @@ constructor(
     val textToSpeechManager: TextToSpeechManager,
     private val imageDownloader: AndroidImageDownloader,
     private val articleListUseCase: ArticlePagingListUseCase,
+    private val aiService: AiService,
+    private val articleDao: ArticleDao,
     workManager: WorkManager,
 ) : ViewModel() {
 
@@ -259,6 +267,9 @@ constructor(
             filterStateUseCase.updateFilterState(searchContent = content)
     }
 
+    private val _toastEvent = MutableSharedFlow<String>()
+    val toastEvent: SharedFlow<String> = _toastEvent.asSharedFlow()
+
     private val _readingUiState = MutableStateFlow(ReadingUiState())
     val readingUiState: StateFlow<ReadingUiState> = _readingUiState.asStateFlow()
 
@@ -307,6 +318,7 @@ constructor(
                             title = article.title,
                             author = article.author,
                             link = article.link,
+                            summary = article.summary,
                             publishedDate = article.date,
                         )
                         .prefetchArticleId()
@@ -321,63 +333,171 @@ constructor(
         _readerState.update { ReaderState() }
     }
 
-    suspend fun ReaderState.renderContent(articleWithFeed: ArticleWithFeed): ReaderState {
-        val contentState =
-            if (articleWithFeed.feed.isFullContent) {
-                val fullContent =
-                    readerCacheHelper.readFullContent(articleWithFeed.article.id).getOrNull()
-                if (fullContent != null) ReaderState.FullContent(fullContent)
-                else {
-                    renderFullContent()
-                    ReaderState.Loading
+suspend fun ReaderState.renderContent(articleWithFeed: ArticleWithFeed): ReaderState {
+    val (initialContent, initialReadingMode) = when {
+        articleWithFeed.feed.isFullContent -> {
+            val fullContent = readerCacheHelper.readFullContent(articleWithFeed.article.id).getOrNull()
+            if (fullContent != null) {
+                ReaderState.FullContent(fullContent) to ReaderState.ReadingMode.FullContent
+            } else {
+                // Immediately trigger full content fetching
+                renderFullContent()
+                ReaderState.Loading to ReaderState.ReadingMode.FullContent
+            }
+        }
+        articleWithFeed.feed.isSummarize -> {
+            if (!articleWithFeed.article.summary.isNullOrBlank()) {
+                ReaderState.Summary(articleWithFeed.article.summary!!) to ReaderState.ReadingMode.Summary
+            } else {
+                // Immediately trigger summarization
+                summarizeOnOpen()
+                ReaderState.Loading to ReaderState.ReadingMode.Summary
+            }
+        }
+        else -> ReaderState.Description(articleWithFeed.article.rawDescription) to ReaderState.ReadingMode.Description
+    }
+
+    return copy(
+        content = initialContent,
+        readingMode = initialReadingMode,
+        summary = articleWithFeed.article.summary
+    )
+}
+
+fun summarizeOnOpen() {
+    val articleWithFeed = readingUiState.value.articleWithFeed ?: return
+    val article = articleWithFeed.article
+
+    viewModelScope.launch(ioDispatcher) {
+        // If a summary is already available, just show it
+        if (!article.summary.isNullOrBlank()) {
+            renderSummary()
+            return@launch
+        }
+
+        // Otherwise, start the summarization process
+        startSummarization(articleWithFeed, article)
+    }
+}
+
+fun renderDescriptionContent() {
+    _readerState.update {
+        it.copy(
+            content = ReaderState.Description(content = currentArticle?.rawDescription ?: ""),
+            readingMode = ReaderState.ReadingMode.Description
+        )
+    }
+}
+
+fun renderFullContent() {
+    val currentState = _readerState.value
+    if (currentState.readingMode == ReaderState.ReadingMode.FullContent) {
+        // If already in full content mode, switch to description mode
+        renderDescriptionContent()
+        return
+    }
+
+    _readingUiState.update { it.copy(isLoadingFullContent = true) }
+
+    viewModelScope.launch(ioDispatcher) {
+        readerCacheHelper
+            .readOrFetchFullContent(currentArticle!!)
+            .onSuccess { content ->
+                _readerState.update {
+                    it.copy(
+                        content = ReaderState.FullContent(content = content),
+                        readingMode = ReaderState.ReadingMode.FullContent
+                    )
                 }
-            } else ReaderState.Description(articleWithFeed.article.rawDescription)
-
-        return copy(content = contentState)
-    }
-
-    fun renderDescriptionContent() {
-        _readerState.update {
-            it.copy(
-                content = ReaderState.Description(content = currentArticle?.rawDescription ?: "")
-            )
-        }
-    }
-
-    fun renderFullContent() {
-        val fetchJob =
-            viewModelScope.launch {
-                readerCacheHelper
-                    .readOrFetchFullContent(currentArticle!!)
-                    .onSuccess { content ->
-                        _readerState.update {
-                            it.copy(content = ReaderState.FullContent(content = content))
-                        }
-                    }
-                    .onFailure { th ->
-                        _readerState.update {
-                            it.copy(content = ReaderState.Error(th.message.toString()))
-                        }
-                    }
+                _readingUiState.update { it.copy(isLoadingFullContent = false) }
             }
-        viewModelScope.launch {
-            delay(100L)
-            if (fetchJob.isActive) {
-                setLoading()
+            .onFailure { th ->
+                _readerState.update {
+                    it.copy(
+                        content = ReaderState.Error(message = th.message ?: ""),
+                        readingMode = ReaderState.ReadingMode.Description // Revert to description on error
+                    )
+                }
+                _readingUiState.update { it.copy(isLoadingFullContent = false) }
             }
-        }
     }
+}
 
     fun updateReadStatus(isUnread: Boolean) {
         readingUiState.value.articleWithFeed?.let {
             diffMapHolder.updateDiff(it, isUnread = isUnread)
         }
-        _readingUiState.update {
-            it.copy(isUnread = diffMapHolder.checkIfUnread(it.articleWithFeed!!))
-        }
+    _readingUiState.update {
+        it.copy(isUnread = diffMapHolder.checkIfUnread(it.articleWithFeed!!))
     }
+}
 
-    fun updateStarredStatus(isStarred: Boolean) {
+private fun renderSummary() {
+    _readerState.update {
+        it.copy(
+            content = ReaderState.Summary(content = currentArticle?.summary ?: ""),
+            readingMode = ReaderState.ReadingMode.Summary
+        )
+    }
+}
+
+fun summarizeArticle() {
+    val articleWithFeed = readingUiState.value.articleWithFeed ?: return
+    val article = articleWithFeed.article
+
+    viewModelScope.launch(ioDispatcher) {
+        // If current mode is Summary, switch to Description
+        if (_readerState.value.readingMode == ReaderState.ReadingMode.Summary) {
+            renderDescriptionContent()
+            return@launch
+        }
+
+        // If a summary is already available, just show it
+        if (!article.summary.isNullOrBlank()) {
+            renderSummary()
+            return@launch
+        }
+
+        // Otherwise, start the summarization process
+        startSummarization(articleWithFeed, article)
+    }
+}
+
+private fun startSummarization(articleWithFeed: ArticleWithFeed, article: Article) {
+    viewModelScope.launch(ioDispatcher) {
+        _readingUiState.update { it.copy(isSummarizing = true) }
+        // Optimistically set reading mode to Summary
+        _readerState.update { it.copy(readingMode = ReaderState.ReadingMode.Summary, content = ReaderState.Loading) }
+
+        val contentToSummarize = readerCacheHelper.readOrFetchFullContent(article)
+            .getOrElse { article.rawDescription }
+
+        if (contentToSummarize.isBlank()) {
+            _readingUiState.update { it.copy(isSummarizing = false) }
+            renderDescriptionContent() // Revert to description if no content
+            return@launch
+        }
+
+        val credentials = settingsProvider.settings.aiCredentials
+        if (credentials.apiKey.isBlank() || credentials.modelId.isBlank()) {
+            _readingUiState.update { it.copy(isSummarizing = false) }
+            renderDescriptionContent() // Revert to description if AI not configured
+            return@launch
+        }
+
+        aiService.getSummary(credentials, contentToSummarize)
+            .onSuccess { summary -> updateArticleSummary(articleWithFeed, summary) }
+            .onFailure {
+                _readingUiState.update { it.copy(isSummarizing = false) }
+                renderDescriptionContent() // Revert on failure
+                viewModelScope.launch {
+                    _toastEvent.emit("Summary cannot be generated. Check your AI settings")
+                }
+            }
+    }
+}
+
+fun updateStarredStatus(isStarred: Boolean) {
         applicationScope.launch(ioDispatcher) {
             _readingUiState.update { it.copy(isStarred = isStarred) }
             currentArticle?.let {
@@ -386,11 +506,23 @@ constructor(
         }
     }
 
-    private fun setLoading() {
-        _readerState.update { it.copy(content = ReaderState.Loading) }
-    }
+private fun setLoading() {
+    _readerState.update { it.copy(content = ReaderState.Loading) }
+}
 
-    fun ReaderState.prefetchArticleId(): ReaderState {
+private suspend fun updateArticleSummary(
+    articleWithFeed: ArticleWithFeed,
+    summary: String
+) {
+    val updatedArticle = articleWithFeed.article.copy(summary = summary)
+    articleDao.update(updatedArticle)
+    withContext(ioDispatcher) {
+        _readingUiState.update { it.copy(articleWithFeed = articleWithFeed.copy(article = updatedArticle), isSummarizing = false) }
+        _readerState.update { it.copy(summary = summary, content = ReaderState.Summary(summary)) }
+    }
+}
+
+fun ReaderState.prefetchArticleId(): ReaderState {
         val items = articleListUseCase.itemSnapshotList
         val currentId = currentArticle?.id
         val index =
@@ -452,6 +584,8 @@ data class ReadingUiState(
     val articleWithFeed: ArticleWithFeed? = null,
     val isUnread: Boolean = false,
     val isStarred: Boolean = false,
+    val isSummarizing: Boolean = false,
+    val isLoadingFullContent: Boolean = false,
 )
 
 data class ReaderState(
@@ -461,12 +595,20 @@ data class ReaderState(
     val author: String? = null,
     val link: String? = null,
     val publishedDate: Date = Date(0L),
+    val summary: String? = null,
     val content: ContentState = Loading,
+    val readingMode: ReadingMode = ReadingMode.Description,
     val listIndex: Int? = null,
     val nextArticle: PrefetchResult? = null,
     val previousArticle: PrefetchResult? = null,
 ) {
     data class PrefetchResult(val articleId: String, val index: Int)
+
+    enum class ReadingMode {
+        Description,
+        Summary,
+        FullContent,
+    }
 
     sealed interface ContentState {
         val text: String?
@@ -475,12 +617,15 @@ data class ReaderState(
                     is Description -> content
                     is Error -> message
                     is FullContent -> content
+                    is Summary -> content
                     Loading -> null
                 }
             }
     }
 
     data class FullContent(val content: String) : ContentState
+
+    data class Summary(val content: String) : ContentState
 
     data class Description(val content: String) : ContentState
 

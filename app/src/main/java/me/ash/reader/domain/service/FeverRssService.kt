@@ -50,7 +50,7 @@ constructor(
     @MainDispatcher private val mainDispatcher: CoroutineDispatcher,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     workManager: WorkManager,
-    private val accountService: AccountService,
+    override val accountService: AccountService,
 ) :
     AbstractRssRepository(
         articleDao,
@@ -97,6 +97,7 @@ constructor(
         isNotification: Boolean,
         isFullContent: Boolean,
         isBrowser: Boolean,
+        isSummarize: Boolean,
     ) {
         throw FeverAPIException("Unsupported")
     }

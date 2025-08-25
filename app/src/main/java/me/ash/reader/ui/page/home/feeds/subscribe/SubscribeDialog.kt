@@ -140,6 +140,7 @@ fun SubscribeDialog(
                                 selectedAllowNotificationPreset = state.notification,
                                 selectedParseFullContentPreset = state.fullContent,
                                 selectedOpenInBrowserPreset = state.browser,
+                                selectedSummarizePreset = state.summarize,
                                 selectedGroupId = state.selectedGroupId,
                                 allowNotificationPresetOnClick = {
                                     subscribeViewModel.toggleAllowNotificationPreset()
@@ -149,6 +150,9 @@ fun SubscribeDialog(
                                 },
                                 openInBrowserPresetOnClick = {
                                     subscribeViewModel.toggleOpenInBrowserPreset()
+                                },
+                                summarizePresetOnClick = {
+                                    subscribeViewModel.toggleSummarizePreset()
                                 },
                                 onGroupClick = {
                                     subscribeViewModel.selectedGroup(it)

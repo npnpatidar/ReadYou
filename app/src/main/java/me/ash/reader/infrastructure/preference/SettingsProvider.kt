@@ -17,7 +17,6 @@ import me.ash.reader.infrastructure.datastore.get
 import me.ash.reader.infrastructure.datastore.getOrDefault
 import me.ash.reader.infrastructure.di.ApplicationScope
 import me.ash.reader.infrastructure.di.IODispatcher
-import me.ash.reader.ui.ext.DataStoreKey
 import me.ash.reader.ui.ext.collectAsStateValue
 import me.ash.reader.ui.ext.dataStore
 import javax.inject.Inject
@@ -79,6 +78,9 @@ class SettingsProvider @Inject constructor(
             LocalDarkTheme provides settings.darkTheme,
             LocalAmoledDarkTheme provides settings.amoledDarkTheme,
             LocalBasicFonts provides settings.basicFonts,
+
+            // AI
+            LocalAiCredentials provides settings.aiCredentials,
 
             // Feeds page
             LocalFeedsTopBarTonalElevation provides settings.feedsTopBarTonalElevation,

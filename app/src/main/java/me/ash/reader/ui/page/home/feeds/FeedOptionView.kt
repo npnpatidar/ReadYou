@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Article
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.rounded.SmartToy
 import androidx.compose.material.icons.outlined.OpenInBrowser
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +36,7 @@ fun FeedOptionView(
     selectedAllowNotificationPreset: Boolean = false,
     selectedParseFullContentPreset: Boolean = false,
     selectedOpenInBrowserPreset: Boolean = false,
+    selectedSummarizePreset: Boolean = false,
     isMoveToGroup: Boolean = false,
     showGroup: Boolean = true,
     showUnsubscribe: Boolean = true,
@@ -43,6 +45,7 @@ fun FeedOptionView(
     allowNotificationPresetOnClick: () -> Unit = {},
     parseFullContentPresetOnClick: () -> Unit = {},
     openInBrowserPresetOnClick: () -> Unit = {},
+    summarizePresetOnClick: () -> Unit = {},
     clearArticlesOnClick: () -> Unit = {},
     unsubscribeOnClick: () -> Unit = {},
     onGroupClick: (groupId: String) -> Unit = {},
@@ -50,7 +53,6 @@ fun FeedOptionView(
     onFeedUrlClick: () -> Unit = {},
     onFeedUrlLongClick: () -> Unit = {},
 ) {
-
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         EditableUrl(text = link, onClick = onFeedUrlClick, onLongClick = onFeedUrlLongClick)
         Spacer(modifier = Modifier.height(26.dp))
@@ -59,11 +61,13 @@ fun FeedOptionView(
             selectedAllowNotificationPreset = selectedAllowNotificationPreset,
             selectedParseFullContentPreset = selectedParseFullContentPreset,
             selectedOpenInBrowserPreset = selectedOpenInBrowserPreset,
+            selectedSummarizePreset = selectedSummarizePreset,
             showUnsubscribe = showUnsubscribe,
             notSubscribeMode = notSubscribeMode,
             allowNotificationPresetOnClick = allowNotificationPresetOnClick,
             parseFullContentPresetOnClick = parseFullContentPresetOnClick,
             openInBrowserPresetOnClick = openInBrowserPresetOnClick,
+            summarizePresetOnClick = summarizePresetOnClick,
             clearArticlesOnClick = clearArticlesOnClick,
             unsubscribeOnClick = unsubscribeOnClick,
         )
@@ -107,11 +111,13 @@ private fun Preset(
     selectedAllowNotificationPreset: Boolean = false,
     selectedParseFullContentPreset: Boolean = false,
     selectedOpenInBrowserPreset: Boolean = false,
+    selectedSummarizePreset: Boolean = false,
     showUnsubscribe: Boolean = true,
     notSubscribeMode: Boolean = false,
     allowNotificationPresetOnClick: () -> Unit = {},
     parseFullContentPresetOnClick: () -> Unit = {},
     openInBrowserPresetOnClick: () -> Unit = {},
+    summarizePresetOnClick: () -> Unit = {},
     clearArticlesOnClick: () -> Unit = {},
     unsubscribeOnClick: () -> Unit = {},
 ) {
@@ -152,6 +158,26 @@ private fun Preset(
                 openInBrowserPresetOnClick()
             }
         }
+    }
+    Spacer(modifier = Modifier.height(26.dp))
+    Subtitle(text = "AI")
+    Spacer(modifier = Modifier.height(10.dp))
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.Start),
+        verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
+    ) {
+        RYSelectionChip(
+            modifier = Modifier,
+            content = "Summarize on open",
+            selected = selectedSummarizePreset,
+            selectedIcon = {
+                Icon(
+                    modifier = Modifier.padding(start = 8.dp).size(20.dp),
+                    imageVector = Icons.Rounded.SmartToy,
+                    contentDescription = "AI Summary"
+                )
+            }
+        ) { summarizePresetOnClick() }
     }
     Spacer(modifier = Modifier.height(26.dp))
 

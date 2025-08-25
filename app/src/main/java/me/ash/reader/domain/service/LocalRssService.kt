@@ -39,7 +39,7 @@ constructor(
     @IODispatcher private val ioDispatcher: CoroutineDispatcher,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     private val workManager: WorkManager,
-    private val accountService: AccountService,
+    override val accountService: AccountService,
     private val syncLogger: SyncLogger,
 ) :
     AbstractRssRepository(

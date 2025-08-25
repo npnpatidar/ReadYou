@@ -17,7 +17,10 @@ sealed interface Route : NavKey {
     @Serializable
     data class Reading(val articleId: String?) : Route {
         companion object {
-            val Saver = Saver<Reading, String>(save = { it.articleId }, restore = { Reading(it) })
+            val Saver: Saver<Reading, String> = Saver(
+                save = { it.articleId ?: "" },
+                restore = { Reading(it.ifEmpty { null }) }
+            )
         }
     }
 
@@ -30,6 +33,9 @@ sealed interface Route : NavKey {
     @Serializable data class AccountDetails(val accountId: Int) : Route
 
     @Serializable data object AddAccounts : Route
+
+    // AI
+    @Serializable data object AiCredentials : Route
 
     // Color & Style
     @Serializable data object ColorAndStyle : Route

@@ -37,6 +37,7 @@ import me.ash.reader.ui.page.settings.accounts.AccountDetailsPage
 import me.ash.reader.ui.page.settings.accounts.AccountViewModel
 import me.ash.reader.ui.page.settings.accounts.AccountsPage
 import me.ash.reader.ui.page.settings.accounts.AddAccountsPage
+import me.ash.reader.ui.page.settings.ai.AiCredentialsPage
 import me.ash.reader.ui.page.settings.color.ColorAndStylePage
 import me.ash.reader.ui.page.settings.color.DarkThemePage
 import me.ash.reader.ui.page.settings.color.feeds.FeedsPageStylePage
@@ -189,6 +190,7 @@ fun AppEntry(backStack: NavBackStack) {
                                 navigateToTroubleshooting = {
                                     backStack.add(Route.Troubleshooting)
                                 },
+                                navigateToAiCredentials = { backStack.add(Route.AiCredentials) },
                                 navigateToTipsAndSupport = { backStack.add(Route.TipsAndSupport) },
                             )
                         }
@@ -220,6 +222,12 @@ fun AppEntry(backStack: NavBackStack) {
                                 navigateToAccountDetails = {
                                     backStack.add(Route.AccountDetails(it))
                                 },
+                            )
+                        }
+                    Route.AiCredentials ->
+                        NavEntry(key) {
+                            AiCredentialsPage(
+                                onBack = onBack
                             )
                         }
                     Route.ColorAndStyle ->
