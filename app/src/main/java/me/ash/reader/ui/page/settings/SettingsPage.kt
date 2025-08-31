@@ -17,6 +17,10 @@ import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.TipsAndUpdates
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.SmartToy
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -47,6 +51,7 @@ import java.util.Locale
 fun SettingsPage(
     updateViewModel: UpdateViewModel = hiltViewModel(),
     onBack: () -> Unit,
+    navigateToAiCredentials: () -> Unit,
     navigateToAccounts: () -> Unit,
     navigateToColorAndStyle: () -> Unit,
     navigateToInteraction: () -> Unit,
@@ -109,6 +114,14 @@ fun SettingsPage(
                         desc = stringResource(R.string.accounts_desc),
                         icon = Icons.Outlined.AccountCircle,
                         onClick = navigateToAccounts
+                    )
+                }
+                item {
+                    SelectableSettingGroupItem(
+                        title = "AI Credentials",
+                        desc = "Configure AI service for summaries",
+                        icon = Icons.Rounded.SmartToy,
+                        onClick = navigateToAiCredentials
                     )
                 }
                 item {

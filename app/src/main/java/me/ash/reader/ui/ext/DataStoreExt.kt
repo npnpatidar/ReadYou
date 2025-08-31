@@ -139,6 +139,12 @@ sealed interface PreferencesKey {
         const val amoledDarkTheme = "amoledDarkTheme"
         const val basicFonts = "basicFonts"
 
+        // AI
+        const val aiApiKey = "aiApiKey"
+        const val aiBaseUrl = "aiBaseUrl"
+        const val aiTimeout = "aiTimeout"
+        const val aiModelId = "aiModelId"
+
         // Feeds page
         const val feedsFilterBarStyle = "feedsFilterBarStyle"
         const val feedsFilterBarPadding = "feedsFilterBarPadding"
@@ -218,6 +224,11 @@ sealed interface PreferencesKey {
                 IntKey(darkTheme),
                 BooleanKey(amoledDarkTheme),
                 IntKey(basicFonts),
+                // AI
+                StringKey(aiApiKey),
+                StringKey(aiBaseUrl),
+                StringKey(aiTimeout),
+                StringKey(aiModelId),
                 // Feeds page
                 IntKey(feedsFilterBarStyle),
                 IntKey(feedsFilterBarPadding),
@@ -300,6 +311,11 @@ data class DataStoreKey<T>(val key: Preferences.Key<T>, val type: Class<T>) {
         const val darkTheme = "darkTheme"
         const val amoledDarkTheme = "amoledDarkTheme"
         const val basicFonts = "basicFonts"
+        const val aiApiKey = "aiApiKey"
+        const val aiBaseUrl = "aiBaseUrl"
+        const val aiTimeout = "aiTimeout"
+        const val aiModelId = "aiModelId"
+
 
         // Feeds page
         const val feedsFilterBarStyle = "feedsFilterBarStyle"
@@ -391,6 +407,11 @@ data class DataStoreKey<T>(val key: Preferences.Key<T>, val type: Class<T>) {
                 amoledDarkTheme to
                     DataStoreKey(booleanPreferencesKey(amoledDarkTheme), Boolean::class.java),
                 basicFonts to DataStoreKey(intPreferencesKey(basicFonts), Int::class.java),
+                // AI
+                aiApiKey to DataStoreKey(stringPreferencesKey(aiApiKey), String::class.java),
+                aiBaseUrl to DataStoreKey(stringPreferencesKey(aiBaseUrl), String::class.java),
+                aiTimeout to DataStoreKey(stringPreferencesKey(aiTimeout), String::class.java),
+                aiModelId to DataStoreKey(stringPreferencesKey(aiModelId), String::class.java),
                 // Feeds page
                 feedsFilterBarStyle to
                     DataStoreKey(intPreferencesKey(feedsFilterBarStyle), Int::class.java),

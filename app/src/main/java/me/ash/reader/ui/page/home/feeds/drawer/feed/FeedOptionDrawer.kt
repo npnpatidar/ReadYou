@@ -99,6 +99,7 @@ fun FeedOptionDrawer(
                         ?: false,
                     selectedParseFullContentPreset = feedOptionUiState.feed?.isFullContent ?: false,
                     selectedOpenInBrowserPreset = feedOptionUiState.feed?.isBrowser ?: false,
+                    selectedSummarizePreset = feedOptionUiState.isSummarize,
                     isMoveToGroup = true,
                     showGroup = feedOptionViewModel.rssService.get().moveSubscription,
                     showUnsubscribe = feedOptionViewModel.rssService.get().deleteSubscription,
@@ -112,6 +113,9 @@ fun FeedOptionDrawer(
                     },
                     openInBrowserPresetOnClick = {
                         feedOptionViewModel.changeOpenInBrowserPreset()
+                    },
+                    summarizePresetOnClick = {
+                        feedOptionViewModel.changeSummarizePreset()
                     },
                     clearArticlesOnClick = {
                         feedOptionViewModel.showClearDialog()

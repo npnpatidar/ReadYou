@@ -38,7 +38,7 @@ abstract class AbstractRssRepository(
     private val notificationHelper: NotificationHelper,
     private val dispatcherIO: CoroutineDispatcher,
     private val dispatcherDefault: CoroutineDispatcher,
-    private val accountService: AccountService,
+    internal open val accountService: AccountService,
 ) {
 
     open val importSubscription: Boolean = true
@@ -53,7 +53,7 @@ abstract class AbstractRssRepository(
 
     open suspend fun subscribe(
         feedLink: String, searchedFeed: SyndFeed, groupId: String,
-        isNotification: Boolean, isFullContent: Boolean, isBrowser: Boolean,
+        isNotification: Boolean, isFullContent: Boolean, isBrowser: Boolean, isSummarize: Boolean,
     ) {
         val accountId = accountService.getCurrentAccountId()
         val feed = Feed(
@@ -65,7 +65,8 @@ abstract class AbstractRssRepository(
             icon = searchedFeed.icon?.link,
             isBrowser = isBrowser,
             isNotification = isNotification,
-            isFullContent = isFullContent
+            isFullContent = isFullContent,
+            isSummarize = isSummarize
         )
         val articles =
             searchedFeed.entries.map { rssHelper.buildArticleFromSyndEntry(feed, accountId, it) }
@@ -147,7 +148,6 @@ abstract class AbstractRssRepository(
         val accountId = accountService.getCurrentAccountId()
         articleDao.markAsStarredByArticleId(accountId, articleId, isStarred)
     }
-
 
     suspend fun clearKeepArchivedArticles(): List<Article> {
         val accountId = accountService.getCurrentAccountId()
@@ -471,7 +471,6 @@ abstract class AbstractRssRepository(
         }
     }
 
-    suspend fun queryUnreadFullContentArticles() =
-        articleDao.queryUnreadFullContentArticles(accountService.getCurrentAccountId())
-
+    suspend fun queryUnreadProcessableArticles() =
+        articleDao.queryUnreadProcessableArticles(accountService.getCurrentAccountId())
 }

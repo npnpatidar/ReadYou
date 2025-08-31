@@ -21,6 +21,9 @@ data class Settings(
     val amoledDarkTheme: AmoledDarkThemePreference = AmoledDarkThemePreference.default,
     val basicFonts: BasicFontsPreference = BasicFontsPreference.default,
 
+    // AI
+    val aiCredentials: AiCredentials = AiCredentialsPreference.default,
+
     // Feeds page
     val feedsFilterBarStyle: FeedsFilterBarStylePreference = FeedsFilterBarStylePreference.default,
     val feedsFilterBarPadding: Int = FeedsFilterBarPaddingPreference.default,
@@ -83,4 +86,3 @@ data class Settings(
     // Languages
     val languages: LanguagesPreference = LanguagesPreference.default,
 )
-

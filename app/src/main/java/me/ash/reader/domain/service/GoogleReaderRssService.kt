@@ -74,7 +74,7 @@ constructor(
     @MainDispatcher private val mainDispatcher: CoroutineDispatcher,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     private val workManager: WorkManager,
-    private val accountService: AccountService,
+    override val accountService: AccountService,
     private val syncLogger: SyncLogger,
 ) :
     AbstractRssRepository(
@@ -133,6 +133,7 @@ constructor(
         isNotification: Boolean,
         isFullContent: Boolean,
         isBrowser: Boolean,
+        isSummarize: Boolean,
     ) {
         val accountId = accountService.getCurrentAccountId()
         val quickAdd = getGoogleReaderAPI().subscriptionQuickAdd(feedLink)
@@ -157,6 +158,7 @@ constructor(
                 isNotification = isNotification,
                 isFullContent = isFullContent,
                 isBrowser = isBrowser,
+                isSummarize = isSummarize,
             )
         )
         // TODO: When users need to subscribe to multiple feeds continuously, this makes them

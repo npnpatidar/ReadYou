@@ -1,5 +1,7 @@
 package me.ash.reader.ui.page.home.reading
 
+import androidx.compose.material.icons.rounded.SmartToy
+import androidx.compose.material3.CircularProgressIndicator
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.spring
@@ -17,6 +19,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Article
 import androidx.compose.material.icons.automirrored.rounded.Article
+import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.outlined.FiberManualRecord
 import androidx.compose.material.icons.outlined.Headphones
@@ -42,6 +46,8 @@ import me.ash.reader.infrastructure.preference.ReadingRendererPreference
 import me.ash.reader.ui.component.base.CanBeDisabledIconButton
 import me.ash.reader.ui.component.webview.BoldCharactersIcon
 
+import me.ash.reader.ui.page.adaptive.ReaderState
+
 private val sizeSpec = spring<IntSize>(stiffness = 700f)
 
 @Composable
@@ -50,15 +56,18 @@ fun BottomBar(
     isUnread: Boolean,
     isStarred: Boolean,
     isNextArticleAvailable: Boolean,
-    isFullContent: Boolean,
+    readingMode: ReaderState.ReadingMode,
     isBoldCharacters: Boolean,
+    isSummarizing: Boolean,
+    isSummaryAvailable: Boolean,
     ttsButton: @Composable () -> Unit,
     onUnread: (isUnread: Boolean) -> Unit = {},
     onStarred: (isStarred: Boolean) -> Unit = {},
     onNextArticle: () -> Unit = {},
-    onFullContent: (isFullContent: Boolean) -> Unit = {},
+    onFullContent: () -> Unit = {},
     onBoldCharacters: () -> Unit = {},
     onReadAloud: () -> Unit = {},
+    onSummarize: () -> Unit = {},
 ) {
     val tonalElevation = LocalReadingPageTonalElevation.current
     val isOutlined = tonalElevation == ReadingPageTonalElevationPreference.Outlined
@@ -141,24 +150,46 @@ fun BottomBar(
                             view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                             onNextArticle()
                         }
+                        if (isSummarizing) {
+                            CircularProgressIndicator(modifier = Modifier.size(22.dp))
+                        } else {
+                            CanBeDisabledIconButton(
+                                disabled = false,
+                                modifier = Modifier.size(40.dp),
+                                imageVector = if (readingMode == ReaderState.ReadingMode.Summary) {
+                                    Icons.AutoMirrored.Filled.List
+                                } else {
+                                    Icons.AutoMirrored.Outlined.List
+                                },
+                                contentDescription = "AI Summary",
+                                tint = if (readingMode == ReaderState.ReadingMode.Summary) {
+                                     MaterialTheme.colorScheme.onSecondaryContainer
+                                 } else {
+                                     MaterialTheme.colorScheme.outline
+                                 },
+                             ) {
+                                 view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                                 onSummarize()
+                             }
+                        }
                         ttsButton()
                         CanBeDisabledIconButton(
                             disabled = false,
                             modifier = Modifier.size(40.dp),
-                            imageVector = if (isFullContent) {
+                            imageVector = if (readingMode == ReaderState.ReadingMode.FullContent) {
                                 Icons.AutoMirrored.Rounded.Article
                             } else {
                                 Icons.AutoMirrored.Outlined.Article
                             },
                             contentDescription = stringResource(R.string.parse_full_content),
-                            tint = if (isFullContent) {
+                            tint = if (readingMode == ReaderState.ReadingMode.FullContent) {
                                 MaterialTheme.colorScheme.onSecondaryContainer
                             } else {
                                 MaterialTheme.colorScheme.outline
                             },
                         ) {
                             view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-                            onFullContent(!isFullContent)
+                            onFullContent()
                         }
                     }
                 }

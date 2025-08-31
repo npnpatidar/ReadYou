@@ -523,7 +523,7 @@ interface ArticleDao {
     @Query(
         """
         SELECT a.id, a.date, a.title, a.author, a.rawDescription, 
-        a.shortDescription, a.fullContent, a.img, a.link, a.feedId, 
+        a.shortDescription, a.fullContent, a.summary, a.img, a.link, a.feedId, 
         a.accountId, a.isUnread, a.isStarred, a.isReadLater, a.updateAt 
         FROM article AS a
         LEFT JOIN feed AS b ON b.id = a.feedId
@@ -544,7 +544,7 @@ interface ArticleDao {
     @Query(
         """
         SELECT a.id, a.date, a.title, a.author, a.rawDescription, 
-        a.shortDescription, a.fullContent, a.img, a.link, a.feedId, 
+        a.shortDescription, a.fullContent, a.summary, a.img, a.link, a.feedId, 
         a.accountId, a.isUnread, a.isStarred, a.isReadLater, a.updateAt 
         FROM article AS a
         LEFT JOIN feed AS b ON b.id = a.feedId
@@ -566,7 +566,7 @@ interface ArticleDao {
     @Query(
         """
         SELECT a.id, a.date, a.title, a.author, a.rawDescription, 
-        a.shortDescription, a.fullContent, a.img, a.link, a.feedId, 
+        a.shortDescription, a.fullContent, a.summary, a.img, a.link, a.feedId, 
         a.accountId, a.isUnread, a.isStarred, a.isReadLater, a.updateAt 
         FROM article AS a
         LEFT JOIN feed AS b ON b.id = a.feedId
@@ -635,7 +635,7 @@ interface ArticleDao {
     @Query(
         """
         SELECT a.id, a.date, a.title, a.author, a.rawDescription, 
-        a.shortDescription, a.fullContent, a.img, a.link, a.feedId, 
+        a.shortDescription, a.fullContent, a.summary, a.img, a.link, a.feedId, 
         a.accountId, a.isUnread, a.isStarred, a.isReadLater, a.updateAt 
         FROM article AS a LEFT JOIN feed AS b 
         ON a.feedId = b.id
@@ -661,19 +661,22 @@ interface ArticleDao {
         accountId: Int,
     ): List<Article>
 
+    @Transaction
     @Query(
         """
-        SELECT a.*
-        FROM article AS a
-        LEFT JOIN feed AS f ON a.feedId = f.id
-        WHERE f.accountId = :accountId
-        AND f.isFullContent = 1
-        AND a.isUnread = 1
+        SELECT * FROM article
+        WHERE accountId = :accountId
+        AND isUnread = 1
+        AND feedId IN (
+            SELECT id FROM feed
+            WHERE accountId = :accountId
+            AND (isFullContent = 1 OR isSummarize = 1)
+        )
         """
     )
-    suspend fun queryUnreadFullContentArticles(
+    suspend fun queryUnreadProcessableArticles(
         accountId: Int,
-    ): List<Article>
+    ): List<ArticleWithFeed>
 
     @Transaction
     @Query(

@@ -197,6 +197,12 @@ dependencies {
 
     implementation(libs.timber)
 
+    // Flexmark for Markdown parsing
+    implementation(libs.flexmark.core)
+    implementation(libs.flexmark.ext.gfm.strikethrough)
+    implementation(libs.flexmark.ext.tables)
+    implementation(libs.flexmark.ext.autolink)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.junit.ext)
