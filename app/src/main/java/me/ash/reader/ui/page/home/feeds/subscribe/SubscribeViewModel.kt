@@ -102,7 +102,7 @@ constructor(
         _subscribeState.update { state ->
             when (state) {
                 is SubscribeState.Configure ->
-                    state.copy(fullContent = !state.fullContent, browser = false)
+                    state.copy(fullContent = !state.fullContent, summarize = false)
 
                 else -> state
             }
@@ -132,7 +132,7 @@ constructor(
     fun toggleSummarizePreset() {
         _subscribeState.update { state ->
             when (state) {
-                is SubscribeState.Configure -> state.copy(summarize = !state.summarize)
+                is SubscribeState.Configure -> state.copy(summarize = !state.summarize, fullContent = false)
                 else -> state
             }
         }

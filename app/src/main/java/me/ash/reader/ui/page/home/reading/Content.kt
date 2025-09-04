@@ -20,6 +20,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -41,6 +43,7 @@ import me.ash.reader.ui.ext.drawVerticalScrollbar
 import me.ash.reader.ui.ext.extractDomain
 import me.ash.reader.ui.ext.roundClick
 
+import me.ash.reader.R
 import me.ash.reader.ui.page.adaptive.ReaderState
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -71,6 +74,8 @@ fun Content(
     val textContentWidth = LocalTextContentWidth.current
     val maxWidthModifier = Modifier.widthIn(max = textContentWidth)
     val uriHandler = LocalUriHandler.current
+    val generatingString = stringResource(R.string.generating_summary)
+    val generatingHtml = remember(generatingString) { "<p>" + generatingString + "</p>" }
     val headline =
         @Composable {
             Column(modifier = Modifier.then(maxWidthModifier).padding(horizontal = 12.dp)) {
@@ -119,7 +124,7 @@ fun Content(
                                         if (isSummaryAvailable && !summary.isNullOrBlank()) {
                                             MarkdownUtils.markdownToHtml(context, summary)
                                         } else if (isSummarizing) {
-                                            "<p>Generating summary...</p>"
+                                            generatingHtml
                                         } else {
                                             ""
                                         }
@@ -176,7 +181,7 @@ fun Content(
                                     LoadingIndicator(modifier = Modifier.size(56.dp).align(Alignment.CenterHorizontally))
                                     Spacer(modifier = Modifier.height(12.dp))
                                     Text(
-                                        text = "Generating summary...",
+                                        text = stringResource(R.string.generating_summary),
                                         style = MaterialTheme.typography.bodyMedium,
                                         modifier = Modifier.padding(horizontal = textHorizontalPadding().dp)
                                     )
@@ -187,7 +192,7 @@ fun Content(
                                 Column(modifier = Modifier.then(maxWidthModifier)) {
                                     HorizontalDivider(modifier = Modifier.padding(top = 12.dp, bottom = 12.dp))
                                     Text(
-                                        text = "Summary",
+                                        text = stringResource(R.string.summary_title),
                                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                                         modifier = Modifier.padding(horizontal = textHorizontalPadding().dp)
                                     )
@@ -202,14 +207,17 @@ fun Content(
                             }
                         }
 
-                        Reader(
-                            context = context,
-                            subheadUpperCase = subheadUpperCase.value,
-                            link = link,
-                            content = contentToDisplay ?: "",
-                            onImageClick = onImageClick,
-                            onLinkClick = { uriHandler.openUri(it) },
-                        )
+                        // Don't render content via Reader for Summary mode since it's already displayed natively above
+                        if (readingMode != ReaderState.ReadingMode.Summary) {
+                            Reader(
+                                context = context,
+                                subheadUpperCase = subheadUpperCase.value,
+                                link = link,
+                                content = contentToDisplay ?: "",
+                                onImageClick = onImageClick,
+                                onLinkClick = { uriHandler.openUri(it) },
+                            )
+                        }
 
                         item {
                             Spacer(modifier = Modifier.height(128.dp))

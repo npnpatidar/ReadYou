@@ -118,6 +118,14 @@ class AiCredentialsViewModel @Inject constructor(
         }
     }
 
+    fun updateSystemPrompt(systemPrompt: String) {
+        val currentCredentials = _uiState.value.credentials
+        if (currentCredentials.systemPrompt != systemPrompt) {
+            _uiState.update { it.copy(credentials = it.credentials.copy(systemPrompt = systemPrompt)) }
+            saveCredentials()
+        }
+    }
+
     private fun saveCredentials() {
         AiCredentialsPreference.put(
             context,

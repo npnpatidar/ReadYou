@@ -385,4 +385,19 @@
     <string name="parse_full_content_desc">Fetch full articles from webpages</string>
     <string name="enable">Enable</string>
     <string name="disable">Disable</string>
+    <string name="summary_title">Summary</string>
+    <string name="generating_summary">Generating summary...</string>
+    <string name="summary_generation_failed">Summary cannot be generated. Check your AI settings</string>
+    <string name="ai_credentials">AI Credentials</string>
+    <string name="ai_credentials_desc">Configure AI service for summaries</string>
+    <string name="api_details">API Details</string>
+    <string name="api_key">API Key</string>
+    <string name="base_url">Base URL</string>
+    <string name="timeout_seconds">Timeout (seconds)</string>
+    <string name="model_id_available">Model ID (%1$d available)</string>
+    <string name="no_models_found">No models found</string>
+    <string name="system_prompt">System Prompt</string>
+    <string name="ai_section">AI</string>
+    <string name="summarize_on_open">Summarize on open</string>
+    <string name="ai_summary">AI Summary</string>
 </resources>

@@ -491,7 +491,7 @@ private fun startSummarization(articleWithFeed: ArticleWithFeed, article: Articl
                 _readingUiState.update { it.copy(isSummarizing = false) }
                 renderDescriptionContent() // Revert on failure
                 viewModelScope.launch {
-                    _toastEvent.emit("Summary cannot be generated. Check your AI settings")
+                    _toastEvent.emit("summary_generation_failed")
                 }
             }
     }

@@ -321,4 +321,20 @@
     <string name="latest">नवीनतम</string>
     <string name="earliest">सबसे पुराना</string>
     <string name="sponsor_desc">हम अपने ऑफ-ऑवर्स में इस मुफ़्त, ओपन-सोर्स ऐप का निर्माण और रखरखाव करते हैं। अगर आपको यह पसंद है, तो कृपया एक छोटे से दान के साथ हमारा समर्थन करने पर विचार करें! ☕️</string>
+    <string name="ai_credentials">AI क्रेडेंशियल्स</string>
+    <string name="ai_credentials_desc">सार के लिए AI सेवा को सेट करें</string>
+    <string name="api_details">API विवरण</string>
+    <string name="api_key">API कुंजी</string>
+    <string name="base_url">बेस URL</string>
+    <string name="timeout_seconds">समय समाप्ति (सेकंड)</string>
+    <string name="model_id_available">मॉडल ID (%1$d उपलब्ध)</string>
+    <string name="no_models_found">कोई मॉडल नहीं मिला</string>
+    <string name="system_prompt">सिस्टम प्रॉम्प्ट</string>
+    <string name="ai_section">AI</string>
+    <string name="summarize_on_open">खोलने पर सार दिखाए</string>
+
+    <string name="ai_summary">AI सार</string>
+    <string name="summary_title">सार</string>
+    <string name="generating_summary">सार बनाया जा रहा है…</string>
+    <string name="summary_generation_failed">सार जनरेट नहीं किया जा सकता। AI सेटिंग जांचें</string>
 </resources>

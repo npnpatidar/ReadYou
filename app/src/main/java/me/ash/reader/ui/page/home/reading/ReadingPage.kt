@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.isSpecified
@@ -73,7 +74,11 @@ fun ReadingPage(
 
     LaunchedEffect(viewModel.toastEvent) {
         viewModel.toastEvent.collectLatest { message ->
-            context.showToast(message)
+            val resolvedMessage = when (message) {
+                "summary_generation_failed" -> context.getString(R.string.summary_generation_failed)
+                else -> message
+            }
+            context.showToast(resolvedMessage)
         }
     }
     val hapticFeedback = LocalHapticFeedback.current

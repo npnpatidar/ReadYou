@@ -144,7 +144,7 @@ fun BottomBar(
                             disabled = !isNextArticleAvailable,
                             modifier = Modifier.size(40.dp),
                             imageVector = Icons.Rounded.ExpandMore,
-                            contentDescription = "Next Article",
+                            contentDescription = stringResource(R.string.next_article),
                             tint = MaterialTheme.colorScheme.outline,
                         ) {
                             view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
@@ -161,7 +161,7 @@ fun BottomBar(
                                 } else {
                                     Icons.AutoMirrored.Outlined.List
                                 },
-                                contentDescription = "AI Summary",
+                                contentDescription = stringResource(R.string.ai_summary),
                                 tint = if (readingMode == ReaderState.ReadingMode.Summary) {
                                      MaterialTheme.colorScheme.onSecondaryContainer
                                  } else {

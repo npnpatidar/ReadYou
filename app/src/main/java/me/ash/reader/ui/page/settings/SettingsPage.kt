@@ -118,8 +118,8 @@ fun SettingsPage(
                 }
                 item {
                     SelectableSettingGroupItem(
-                        title = "AI Credentials",
-                        desc = "Configure AI service for summaries",
+                        title = stringResource(R.string.ai_credentials),
+                        desc = stringResource(R.string.ai_credentials_desc),
                         icon = Icons.Rounded.SmartToy,
                         onClick = navigateToAiCredentials
                     )

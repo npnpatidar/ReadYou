@@ -16,12 +16,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import kotlinx.coroutines.launch
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -55,12 +57,16 @@ fun AiCredentialsPage(
     val apiKeyState = rememberTextFieldState(uiState.credentials.apiKey)
     val baseUrlState = rememberTextFieldState(uiState.credentials.baseUrl)
     val timeoutState = rememberTextFieldState(uiState.credentials.timeout)
+    val systemPromptState = rememberTextFieldState(uiState.credentials.systemPrompt)
+    var systemPromptText by remember { mutableStateOf(uiState.credentials.systemPrompt) }
     var modelDropdownExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.credentials) {
         if (apiKeyState.text.toString() != uiState.credentials.apiKey) apiKeyState.setTextAndPlaceCursorAtEnd(uiState.credentials.apiKey)
         if (baseUrlState.text.toString() != uiState.credentials.baseUrl) baseUrlState.setTextAndPlaceCursorAtEnd(uiState.credentials.baseUrl)
         if (timeoutState.text.toString() != uiState.credentials.timeout) timeoutState.setTextAndPlaceCursorAtEnd(uiState.credentials.timeout)
+        if (systemPromptState.text.toString() != uiState.credentials.systemPrompt) systemPromptState.setTextAndPlaceCursorAtEnd(uiState.credentials.systemPrompt)
+        if (systemPromptText != uiState.credentials.systemPrompt) systemPromptText = uiState.credentials.systemPrompt
     }
 
     LaunchedEffect(apiKeyState.text) {
@@ -69,6 +75,9 @@ fun AiCredentialsPage(
 
     LaunchedEffect(baseUrlState.text) { viewModel.updateBaseUrl(baseUrlState.text.toString()) }
     LaunchedEffect(timeoutState.text) { viewModel.updateTimeout(timeoutState.text.toString()) }
+    LaunchedEffect(systemPromptState.text) { viewModel.updateSystemPrompt(systemPromptState.text.toString()) }
+
+    LaunchedEffect(systemPromptText) { viewModel.updateSystemPrompt(systemPromptText) }
 
     RYScaffold(
         containerColor = MaterialTheme.colorScheme.surface onLight MaterialTheme.colorScheme.inverseOnSurface,
@@ -83,29 +92,29 @@ fun AiCredentialsPage(
         content = {
             LazyColumn(modifier = Modifier.padding(16.dp)) {
                 item {
-                    DisplayText(text = "AI Credentials", desc = "")
+                    DisplayText(text = stringResource(R.string.ai_credentials), desc = "")
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
                 item {
                     Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                        Subtitle(text = "API Details")
+                        Subtitle(text = stringResource(R.string.api_details))
                         RYTextField2(
                             state = apiKeyState,
-                            label = "API Key",
+                            label = stringResource(R.string.api_key),
                             isPassword = true,
                             modifier = Modifier.fillMaxWidth()
                         )
                         Spacer(Modifier.height(16.dp))
                         RYTextField2(
                             state = baseUrlState,
-                            label = "Base URL",
+                            label = stringResource(R.string.base_url),
                             modifier = Modifier.fillMaxWidth()
                         )
                         Spacer(Modifier.height(16.dp))
                         RYTextField2(
                             state = timeoutState,
-                            label = "Timeout (seconds)",
+                            label = stringResource(R.string.timeout_seconds),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -114,19 +123,21 @@ fun AiCredentialsPage(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable {
-                                    modelDropdownExpanded = !modelDropdownExpanded
-                                    Log.d("AiCredentialsPage", "Dropdown expanded: $modelDropdownExpanded")
-                                }
                                 .padding(vertical = 8.dp)
                         ) {
                             OutlinedTextField(
                                 value = uiState.credentials.modelId,
                                 onValueChange = {},
-                                label = { Text("Model ID (${uiState.models.size} available)") },
+                                label = { Text(stringResource(R.string.model_id_available, uiState.models.size)) },
                                 readOnly = true,
-                                trailingIcon = { Icon(Icons.Outlined.ArrowDropDown, null) },
-                                modifier = Modifier.fillMaxWidth()
+                                trailingIcon = {
+                                    IconButton(onClick = { modelDropdownExpanded = !modelDropdownExpanded }) {
+                                        Icon(Icons.Outlined.ArrowDropDown, null)
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { modelDropdownExpanded = !modelDropdownExpanded }
                             )
                             DropdownMenu(
                                 expanded = modelDropdownExpanded,
@@ -135,7 +146,7 @@ fun AiCredentialsPage(
                             ) {
                                 if (uiState.models.isEmpty()) {
                                     DropdownMenuItem(
-                                        text = { Text(if (uiState.isLoadingModels) stringResource(R.string.loading) else "No models found") },
+                                        text = { Text(if (uiState.isLoadingModels) stringResource(R.string.loading) else stringResource(R.string.no_models_found)) },
                                         onClick = { modelDropdownExpanded = false },
                                         enabled = false,
                                     )
@@ -154,9 +165,26 @@ fun AiCredentialsPage(
                         }
                     }
                 }
+
+                item {
+                    Spacer(Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = systemPromptText,
+                        onValueChange = { systemPromptText = it },
+                        label = { Text(stringResource(R.string.system_prompt)) },
+                        singleLine = false,
+                        maxLines = Int.MAX_VALUE,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                            .padding(horizontal = 24.dp)
+                    )
+                }
+
                 item {
                     Spacer(modifier = Modifier.height(24.dp))
                     Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+                    Spacer(modifier = Modifier.height(300.dp)) // Extra space for keyboard
                 }
             }
         }

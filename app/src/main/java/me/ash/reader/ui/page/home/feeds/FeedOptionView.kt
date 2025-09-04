@@ -129,6 +129,7 @@ private fun Preset(
                 modifier = Modifier,
                 content = stringResource(R.string.parse_full_content),
                 selected = selectedParseFullContentPreset,
+                enabled = !selectedSummarizePreset,
                 selectedIcon = {
                     Icon(
                         modifier = Modifier.padding(start = 8.dp).size(20.dp),
@@ -160,7 +161,7 @@ private fun Preset(
         }
     }
     Spacer(modifier = Modifier.height(26.dp))
-    Subtitle(text = "AI")
+    Subtitle(text = stringResource(R.string.ai_section))
     Spacer(modifier = Modifier.height(10.dp))
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.Start),
@@ -168,13 +169,14 @@ private fun Preset(
     ) {
         RYSelectionChip(
             modifier = Modifier,
-            content = "Summarize on open",
+            content = stringResource(R.string.summarize_on_open),
             selected = selectedSummarizePreset,
+            enabled = !selectedParseFullContentPreset,
             selectedIcon = {
                 Icon(
                     modifier = Modifier.padding(start = 8.dp).size(20.dp),
                     imageVector = Icons.Rounded.SmartToy,
-                    contentDescription = "AI Summary"
+                    contentDescription = stringResource(R.string.ai_summary)
                 )
             }
         ) { summarizePresetOnClick() }

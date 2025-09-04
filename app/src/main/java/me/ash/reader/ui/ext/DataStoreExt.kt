@@ -144,6 +144,7 @@ sealed interface PreferencesKey {
         const val aiBaseUrl = "aiBaseUrl"
         const val aiTimeout = "aiTimeout"
         const val aiModelId = "aiModelId"
+        const val aiSystemPrompt = "aiSystemPrompt"
 
         // Feeds page
         const val feedsFilterBarStyle = "feedsFilterBarStyle"
@@ -229,6 +230,7 @@ sealed interface PreferencesKey {
                 StringKey(aiBaseUrl),
                 StringKey(aiTimeout),
                 StringKey(aiModelId),
+                StringKey(aiSystemPrompt),
                 // Feeds page
                 IntKey(feedsFilterBarStyle),
                 IntKey(feedsFilterBarPadding),
@@ -315,6 +317,7 @@ data class DataStoreKey<T>(val key: Preferences.Key<T>, val type: Class<T>) {
         const val aiBaseUrl = "aiBaseUrl"
         const val aiTimeout = "aiTimeout"
         const val aiModelId = "aiModelId"
+        const val aiSystemPrompt = "aiSystemPrompt"
 
 
         // Feeds page
@@ -412,6 +415,7 @@ data class DataStoreKey<T>(val key: Preferences.Key<T>, val type: Class<T>) {
                 aiBaseUrl to DataStoreKey(stringPreferencesKey(aiBaseUrl), String::class.java),
                 aiTimeout to DataStoreKey(stringPreferencesKey(aiTimeout), String::class.java),
                 aiModelId to DataStoreKey(stringPreferencesKey(aiModelId), String::class.java),
+                aiSystemPrompt to DataStoreKey(stringPreferencesKey(aiSystemPrompt), String::class.java),
                 // Feeds page
                 feedsFilterBarStyle to
                     DataStoreKey(intPreferencesKey(feedsFilterBarStyle), Int::class.java),

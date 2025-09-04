@@ -20,6 +20,10 @@ class AiService @Inject constructor(
     private val okHttpClient: OkHttpClient,
     private val syncLogger: SyncLogger,
 ) {
+
+    companion object {
+        const val DEFAULT_SYSTEM_PROMPT = "You are an assistant in an RSS reader app, summarizing article content. Provide summaries in the article's language if 99% recognizable; otherwise, use English. Keep summaries up to 100 words, 3 paragraphs, with up to 3 bullet points per paragraph. For readability use bullet points, titles, quotes and new lines using Markdown only. Use only single language. Keep full quotes if any. Output should be in Markdown. Use proper Markdown syntax for all formatting elements."
+    }
     private val gson = Gson()
 
     suspend fun listModels(credentials: AiCredentials): Result<List<String>> {
@@ -47,14 +51,19 @@ class AiService @Inject constructor(
 
     suspend fun getSummary(credentials: AiCredentials, content: String): Result<String> {
         return runCatching {
-             withTimeout(credentials.timeout.toLongOrNull()?.times(1000) ?: 30000) {
-                val requestBody = OpenAiDTO.ChatCompletionRequest(
-                                    model = credentials.modelId,
-                                    messages = listOf(
-                                        OpenAiDTO.Message("system", "You are an assistant in an RSS reader app, summarizing article content. Provide summaries in the article's language if 99% recognizable; otherwise, use English. Keep summaries up to 100 words, 3 paragraphs, with up to 3 bullet points per paragraph. For readability use bullet points, titles, quotes and new lines using Markdown only. Use only single language. Keep full quotes if any. Output should be in Markdown. Use proper Markdown syntax for all formatting elements."),
-                                        OpenAiDTO.Message("user", content)
-                                    )
-                                )
+              withTimeout(credentials.timeout.toLongOrNull()?.times(1000) ?: 30000) {
+                  val systemPrompt = if (credentials.systemPrompt.isNotBlank()) {
+                      credentials.systemPrompt
+                  } else {
+                      DEFAULT_SYSTEM_PROMPT
+                  }
+                 val requestBody = OpenAiDTO.ChatCompletionRequest(
+                                     model = credentials.modelId,
+                                     messages = listOf(
+                                         OpenAiDTO.Message("system", systemPrompt),
+                                         OpenAiDTO.Message("user", content)
+                                     )
+                                 )
                 val jsonBody = gson.toJson(requestBody)
 
                 val request = Request.Builder()
